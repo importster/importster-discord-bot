@@ -14,7 +14,7 @@ docker build -t discord-bot .
 npm install
 ```
   - discord.jsとnode-cronとyamlがインストールされてればいいです
-  - discord.jsはv14.xx.xじゃないと動かないので注意
+  - discord.jsはv14.x.xじゃないと動かないので注意
 
 ### 3. config.ymlの変更
 ```yaml
