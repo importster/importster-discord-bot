@@ -48,6 +48,24 @@ const Logger = (message, isError = false) => {
     fs.appendFileSync(LOG_FILE, logLine, 'utf8');
 };
 Logger('----------------------------------');
+//----------------------------------------------------------------escape
+const escapeHtml = (str) => {
+    if (typeof str !== 'string') return str;
+    
+    let escaped = str.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+    
+    return escaped.replace(/[&<>'"\\]/g, (match) => {
+        const escapeMap = {
+            '\\': '\\',
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        return escapeMap[match];
+    });
+};
 //----------------------------------------------------------------config.yml
 const CONFIG_FILE = './config.yml';
 let config = {};
@@ -128,16 +146,21 @@ let savedData = loadRelease();
 
 const saveReleaseFile = () => {
     releaseDoc.contents = releaseDoc.createNode(savedData);
-    const yamlString = YAML.stringify(releaseDoc, { collectionStyle: 'flow' });
+    const yamlString = YAML.stringify(releaseDoc, { 
+        //collectionStyle: 'flow',
+        collectionStyle: 'block',
+        defaultStringType: 'QUOTE_DOUBLE',
+        lineWidth: 0
+    });
     fs.writeFileSync(RELEASE_FILE, yamlString, 'utf8');
     Logger('[save] release.yml');
 };
 
 //----------------------------------------------------------------release-old.txt
 const OLD_RELEASE_LOG_FILE = './release-old.txt';
-const logOldRelease = (repo, oldInfo) => {
+const logOldRelease = (repo, oldInfo, ) => {
     const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-    const logMessage = `[${now}] Repo: ${repo} | Old ID: ${oldInfo.id || 'N/A'} | Old Name: ${oldInfo.name || 'N/A'} | Old PublishedAt: ${oldInfo.published_at || 'N/A'}\n`;
+    const logMessage = `[${now}] Repo: ${repo} | ID: ${oldInfo.id || 'N/A'} | Name: ${oldInfo.name || 'N/A'} | PublishedAt: ${oldInfo.published_at || 'N/A'} | body: ${oldInfo.body || 'N/A'}\n`;
     
     fs.appendFileSync(OLD_RELEASE_LOG_FILE, logMessage, 'utf8');
     Logger(`[save] release-old.txt : ${repo}`);
@@ -186,11 +209,16 @@ async function checkGitHubReleases(targetChannel = null) {
                     logOldRelease(repo, savedRepoInfo);
                 }
                 
-                savedData.releases[repo] = {
-                    id: latestReleaseId,
-                    name: latestRelease.name || latestRelease.tag_name,
-                    published_at: latestRelease.published_at
+                const escapedRepoName = escapeHtml(repo);
+                const releaseName = latestRelease.name || latestRelease.tag_name;
+
+                savedData.releases[escapedRepoName] = {
+                    id: escapeHtml(latestReleaseId),
+                    name: escapeHtml(releaseName),
+                    published_at: escapeHtml(latestRelease.published_at),
+                    body : escapeHtml(latestRelease.body)
                 };
+
                 saveReleaseFile();
                 Logger(`[update] ${repo}`);
                 updatedCount++;
@@ -198,7 +226,7 @@ async function checkGitHubReleases(targetChannel = null) {
                 const embed = new EmbedBuilder()
                     .setTitle(`【${repo}】`)
                     .setURL(latestRelease.html_url)
-                    .setDescription(`**バージョン:** ${latestRelease.tag_name}\n\n${latestRelease.body ? latestRelease.body.slice(0, 500) + '...' : '詳細な説明はありません。'}`)
+                    .setDescription(`**バージョン:** ${latestRelease.tag_name}\n${latestRelease.body ? latestRelease.body.slice(0, 500) + '...' : '詳細な説明はありません。'}`)
                     .setColor('#24292e')
                     .setTimestamp(new Date(latestRelease.published_at));
 
@@ -231,9 +259,6 @@ client.once(Events.ClientReady, () => {
         }
         
         if (!result) return;
-        //if (result.count === 0) {
-        //    console.log('どのリポジトリもリリースはないみたいだよ。');
-        //}
     }, {
         timezone: "Asia/Tokyo"
     });
@@ -273,11 +298,6 @@ client.on('messageCreate', async (message) => {
         saveRepositoryFile();
 
         await message.reply(`"${targetRepo}"を新しく監視リストに追加したよ。`);
-        return;
-    }
-
-    if (message.content === '!Composter') {
-        await message.channel.send('呼んだ？');
         return;
     }
 
