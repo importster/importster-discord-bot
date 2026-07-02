@@ -1,0 +1,5 @@
+services:
+  bot:
+    build: .
+    volumes:
+      - ./bot:/usr/src/bot:rw 
