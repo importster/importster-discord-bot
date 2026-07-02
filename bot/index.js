@@ -253,9 +253,9 @@ client.once(Events.ClientReady, () => {
         const currentHour = new Date(new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })).getHours();
         
         if (currentHour === 6) {
-            Logger('[hour] 6:00');
+            Logger('[complete] 6:00');
         } else if (currentHour === 18) {
-            Logger('[hour] 18:00');
+            Logger('[complete] 18:00');
         }
         
         if (!result) return;
