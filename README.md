@@ -46,7 +46,7 @@ docker compose up
 - repository.yml
   - このファイルに新しいリリースを知りたいリポジトリを書きます
 - release-old.txt
-  - repository.ymlの情報が上書きされる際に上書き前の情報がここに追加されます
+  - release.ymlの情報が上書きされる際に上書き前の情報がここに追加されます
 - log.txt
   - botのコンソール出力がここに書かれます。
   - Loggerが書き込みをしてるのでlog.txtに追加したいlogならconsole.log();じゃなくてLogger();にしてください。
