@@ -20,7 +20,7 @@ npm install
   - discord.jsはv14.26.4なら動きます<br>
   v13になってると絶対に動きません。
 
-### 3. config.ymlの変更
+### 3. credentials.ymlの変更
 ```yaml
 discord-token: "yourtoken"
 github-token : "yourtoken"
@@ -36,6 +36,8 @@ docker compose up
 ### 5. discordの方で設定とかいろいろ
   - !c4460-here
     - このコマンドを出力した場所がリリース情報の通知をするチャンネルに選ばれます。
+  - !c4460-me
+    - このコマンドを出力したユーザーは定期チェックで新しいリリースを入手した際にメンションされます。
   - !c4460-release
     - コマンド出力した場所で直ぐに新しいリリースがないか確認します。
   - !c4460-repository 所有者/リポジトリ名
@@ -44,12 +46,14 @@ docker compose up
     - 詳しく言うとrepository.ymlに所有者/リポジトリ名が追加されます。
 
 ### 6. ファイルについて
+- config.yml
+  - このファイルに定期チェックの結果が送信されるチャンネルとメンションするユーザーのIDが書かれます
 - release.yml
-  - このファイルにリリースの情報が追加されます
+  - このファイルにリリースのIDと更新日が追加されます
 - repository.yml
   - このファイルに新しいリリースを知りたいリポジトリを書きます
-- release-old.txt
-  - release.ymlの情報が上書きされる際に上書き前の情報がここに追加されます
+- release-log.txt
+  - リリースの詳細な情報がここに追加されます
 - log.txt
-  - botのコンソール出力がここに書かれます。
-  - Loggerが書き込みをしてるのでlog.txtに追加したいlogならconsole.log();じゃなくてLogger();使ってください。
+  - コンソール出力がここに書かれます。
+  - Loggerが書き込みをしてるのでlog.txtに追加したいログはconsole.log();じゃなくてLogger();使ってください。
