@@ -36,7 +36,8 @@ const client = new Client({
 
 //----------------------------------------------------------------log
 const LOG_FILE = './log.txt';
-const Logger = (message, isError = false) => {
+const OP_LOG_FILE = './op-log.txt';
+const Logger = (message, isError = false ,op = false) => {
     const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
     const prefix = isError ? '[ERROR]' : '[INFO]';
     const logLine = `[${now}] ${prefix} ${message}\n`;
@@ -46,7 +47,11 @@ const Logger = (message, isError = false) => {
     } else {
         console.log(logLine.trim());
     }
-    fs.appendFileSync(LOG_FILE, logLine, 'utf8');
+    if(op){
+        fs.appendFileSync(OP_LOG_FILE, logLine, 'utf8');
+    }else{
+        fs.appendFileSync(LOG_FILE, logLine, 'utf8');
+    }
 };
 Logger('----------------------------------');
 
@@ -87,50 +92,45 @@ let repoDoc = new YAML.Document([]);
 const loadRepositories = () => {
     if (fs.existsSync(REPOSITORY_FILE)) {
         try {
-            repoDoc = YAML.parseDocument(fs.readFileSync(REPOSITORY_FILE, 'utf8'));
-            
-            if (!repoDoc.contents || typeof repoDoc.contents.toJSON !== 'function') {
-                repoDoc.contents = repoDoc.createNode([]);
-            }
+            const fileData = YAML.parse(fs.readFileSync(REPOSITORY_FILE, 'utf8')) || {};
+
             Logger(`[load] repository.yml`);
-            return repoDoc.contents.toJSON() || [];
+            return {
+                repository: fileData.repository || [],
+                rmrepository: fileData.rmrepository || []
+            };
         } catch (e) {
             Logger(`[error] repository.yml : ${e.message}`, true);
             return [];
         }
     }
-    return [];
+    return { repository: [], rmrepository: [] };
 };
 let REPOSITORIES = loadRepositories();
 
 const saveRepositoryFile = () => {
+    repoDoc.contents = repoDoc.createNode(REPOSITORIES);
     fs.writeFileSync(REPOSITORY_FILE, repoDoc.toString(), 'utf8');
     Logger('[save] repository.yml');
 };
-
 //----------------------------------------------------------------config.yml
 const CONFIG_FILE = './config.yml';
 let configDoc = new YAML.Document({});
 const loadConfig = () => {
-    let defaultData = { target_channel_id: null, mention_users: [] };
     if (fs.existsSync(CONFIG_FILE)) {
         try {
-            Logger(`[load] config.yml`);
-            const fileContent = fs.readFileSync(CONFIG_FILE, 'utf8');
-            configDoc = YAML.parseDocument(fileContent);
-            const fileData = configDoc.contents ? configDoc.contents.toJSON() : null;
-            if (fileData) {
-                return {
-                    target_channel_id: fileData.target_channel_id || null,
-                    mention_users: fileData.mention_users || []
-                };
-            }
+            const fileData = YAML.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) || {};
+            
+            Logger(`[load] repository.yml`);
+            return {
+                target_channel_id: fileData.target_channel_id || null,
+                mention_users: fileData.mention_users || []
+            };
         } catch (e) {
-            Logger(`[error] config.yml : ${e.message}`, true);
+            Logger(`[error] repository.yml : ${e.message}`, true);
         }
     }
-    configDoc.contents = configDoc.createNode(defaultData);
-    return defaultData;
+    return { target_channel_id: null, mention_users: [] };
 };
 let botConfig = loadConfig();
 
@@ -187,7 +187,7 @@ const logNewRelease = (repo, newInfo, ) => {
     const logMessage = `[${now}] Repo: ${repo} | ID: ${newInfo.id || 'N/A'} | Name: ${newInfo.name || 'N/A'} | createdAt: ${newInfo.created_at || 'N/A'} | updatedAt: ${newInfo.updated_at || 'N/A'} | body: ${newInfo.body || 'N/A'}\n`;
     
     fs.appendFileSync(RELEASE_LOG_FILE, logMessage, 'utf8');
-    Logger(`[save] release-log.txt : ${repo}`);
+    Logger(`[save] release-log.txt`);
 };
 
 //----------------------------------------------------------------checkGitHubReleases
@@ -209,7 +209,7 @@ async function checkGitHubReleases(targetChannel = null) {
     let lereaseCount = 0;
     let updateCount = 0;
 
-    for (const repo of REPOSITORIES) {
+    for (const repo of REPOSITORIES.repository) {
         try {
             const response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
                 headers: {
@@ -249,7 +249,7 @@ async function checkGitHubReleases(targetChannel = null) {
                 saveReleaseFile();
 
                 updateCount++;
-                Logger(`[update] ${repo}`);
+                Logger(`[update] ${repo}`, false, true);
             }
 
             if (savedRepoInfo.id !== latestReleaseId) {
@@ -263,7 +263,7 @@ async function checkGitHubReleases(targetChannel = null) {
                 await channel.send({ embeds: [embed] });
 
                 lereaseCount++;
-                Logger(`[newrelease] ${repo}`);
+                Logger(`[newrelease] ${repo} : ${latestRelease.tag_name}`, false, true);
             }
 
         } catch (error) {
@@ -295,12 +295,10 @@ client.once(Events.ClientReady, () => {
         }
         
         if (result.count > 0) {
-            let sendOptions = { embeds: [embed] };
             if (botConfig.mention_users && botConfig.mention_users.length > 0) {
                 const mentions = botConfig.mention_users.map(id => `<@${id}>`).join(' ');
-                sendOptions.content = `${mentions} 新しいリリースがあったよ`;
+            await channel.send(`${mentions} 新しいリリースがあったよ`);
             }
-            await channel.send(sendOptions);
         }
         if (!result) return;
     }, {
@@ -315,40 +313,19 @@ client.once(Events.ClientReady, () => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
+    if (message.content === 'Compostar') {
+        await message.channel.send(`<@${message.author.id}> 呼んだ？`);
+        return;
+    }
+
     if (message.content === '!c4460-here') {
         botConfig.target_channel_id = message.channel.id;
+        Logger(`[changechannel] ${message.channel.id}`, false, true);
         saveReleaseFile();
         await message.reply(`今後は#${message.channel.name}に情報を送るね。`);
         return;
     }
 
-    if (message.content.startsWith('!c4460-repository ')) {
-        REPOSITORIES = loadRepositories();
-        const targetRepo = message.content.slice('!c4460-repository '.length).trim();
-
-        if (!targetRepo || !targetRepo.includes('/')) {
-            await message.reply('リポジトリの指定方法が正しくないよ。"所有者/リポジトリ名"の形式で入力してね。');
-            return;
-        }
-
-        if (REPOSITORIES.includes(targetRepo)) {
-            await message.reply(`"${targetRepo}"はすでに登録済みだね`);
-            return;
-        }
-
-        REPOSITORIES.push(targetRepo);
-        repoDoc.add(targetRepo); 
-        
-        saveRepositoryFile();
-
-        await message.reply(`"${targetRepo}"を監視リストに追加したよ`);
-        return;
-    }
-
-    if (message.content === 'Compostar') {
-        await message.channel.send(`<@${message.author.id}> 呼んだ？`);
-        return;
-    }
 
     if (message.content === '!c4460-release') {
         const statusMessage = await message.reply('新しいリリースの確認中...');
@@ -360,24 +337,114 @@ client.on('messageCreate', async (message) => {
             await statusMessage.edit('新しいリリースがあったよ');
         }
     }
+
+    //----------------------------------------------------------------repository
+    if (message.content.startsWith('!c4460-repository ')) {
+        REPOSITORIES = loadRepositories();
+        const targetRepo = message.content.slice('!c4460-repository '.length).trim();
+
+        if (!targetRepo || !targetRepo.includes('/')) {
+            await message.reply('リポジトリの指定方法が正しくないよ。"所有者/リポジトリ名"の形式で入力してね。');
+            return;
+        }
+
+        if (REPOSITORIES.repository.includes(targetRepo)) {
+            await message.reply(`"${targetRepo}"はすでに登録済みだね`);
+            return;
+        }
+
+        REPOSITORIES.repository.push(targetRepo); 
+
+        Logger(`[addrepo] ${targetRepo}`, false, true);
+        saveRepositoryFile();
+
+        await message.reply(`"${targetRepo}"を監視リストに追加したよ`);
+        return;
+    }
+
+    if (message.content.startsWith('!c4460-rm-repository ')) {
+        const targetRepo = message.content.slice('!c4460-rm-repository '.length).trim();
+
+        if (!targetRepo || !targetRepo.includes('/')) {
+            await message.reply('リポジトリの指定方法が正しくないよ。"所有者/リポジトリ名"の形式で入力してね。');
+            return;
+        }
+
+         
+        const doc = YAML.parseDocument(fs.readFileSync(RELEASE_FILE, 'utf8'));
+        console.log(`log1`);
+
+        const seq = doc.get('repository');
+        let itemToMove = null;
+
+        console.log(`log2`);
+        const index = seq.items.findIndex(item => item.value === targetRepo);
+        if (index !== -1) {
+            itemToMove = seq.items.splice(index, 1)[0];
+        }
+        else{
+            await message.reply(`"${targetRepo}"が見つからなかったよ`);
+            return;
+        }
+        console.log(`log3`);
+        
+
+        if (itemToMove) {
+            const seqB = doc.get('rmrepository');
+            if (YAML.isSeq(seqB)) {
+                seqB.items.push(itemToMove);
+            }
+        }
+
+        Logger(`[removerepo] ${targetRepo}`, false, true);
+
+        await message.reply(`"${targetRepo}"を除外したよ`);
+        return;
+    }
+
+    //----------------------------------------------------------------me
     if (message.content === '!c4460-me') {
         const userId = message.author.id;
 
         if (botConfig.mention_users.includes(userId)) {
-            await message.reply('あなたは登録済みよ');
+            await message.reply('登録してあるよ');
             return;
         }
 
         botConfig.mention_users.push(userId);
+        Logger(`[adduser] ${userId}`, false, true);
         saveConfigFile();
-        Logger(`[adduser] ${userId}`);
 
         await message.reply('おーけぃ、登録したよ');
+        return;
+    }
+    if (message.content === '!c4460-rm-me') {
+        const userId = message.author.id;
+        const index = botConfig.mention_users.indexOf(userId);
+
+        if (index === -1) {
+            await message.reply('元から登録されてないよ');
+            return;
+        }
+
+        botConfig.mention_users.splice(index, 1);
+
+        if (fs.existsSync(CONFIG_FILE)) {
+            const regex = new RegExp(`^([ \\t]*-[ \\t]*['"]?${userId}['"]?[ \\t]*)`, 'm');
+
+            let fileContent = fs.readFileSync(CONFIG_FILE, 'utf8').replace(regex, '# $1');
+            
+            fs.writeFileSync(CONFIG_FILE, fileContent, 'utf8');
+        }
+
+        //botConfig.mention_users.splice(index, 1);
+        Logger(`[removeuser] ${userId}`, false, true);
+        //saveConfigFile();
+
+        await message.reply('除外しといたよ');
         return;
     }
 });
 
 //----------------------------------------------------------------login
-
 client.login(credentials['discord-token']);
-
