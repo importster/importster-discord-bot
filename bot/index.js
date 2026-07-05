@@ -280,7 +280,16 @@ client.once(Events.ClientReady, () => {
         const result = await checkGitHubReleases();
         
         const currentHour = new Date(new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })).getHours();
-        
+        let channel;
+    
+        if (!channel && configJson.target_channel_id) {
+            channel = await client.channels.fetch(configJson.target_channel_id).catch((e) => Logger(e.message, true));
+        }
+        if (!channel) {
+            Logger('[error] channel not found', true);
+            return null;
+        }
+
         if (currentHour === 6) {
             Logger('[complete] 6:00');
         } else if (currentHour === 18) {
@@ -289,7 +298,7 @@ client.once(Events.ClientReady, () => {
         
         if (result.count > 0) {
             if (configJson.mention_users && configJson.mention_users.length > 0) {
-                const mentions = JSON.stringify(configJson.mention_users).map(id => `<@${id}>`).join(' ');
+                const mentions = configJson.mention_users.map(id => `<@${id}>`).join(' ');
             await channel.send(`${mentions} 新しいリリースがあったよ`);
             }
         }
