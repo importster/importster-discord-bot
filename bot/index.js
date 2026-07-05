@@ -279,7 +279,9 @@ client.once(Events.ClientReady, () => {
     cron.schedule('0 6,18 * * *', async () => {
         const result = await checkGitHubReleases();
         
-        const currentHour = new Date(new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })).getHours();
+        const currentdata = new Date(new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }))
+        const currentHour = currentdata.getHours();
+        const currentMinutes = currentdata.getMinutes();
         let channel;
     
         if (!channel && configJson.target_channel_id) {
@@ -290,11 +292,7 @@ client.once(Events.ClientReady, () => {
             return null;
         }
 
-        if (currentHour === 6) {
-            Logger('[complete] 6:00');
-        } else if (currentHour === 18) {
-            Logger('[complete] 18:00');
-        }
+        Logger(`[complete] ${currentHour}:${currentMinutes}`);
         
         if (result.count > 0) {
             if (configJson.mention_users && configJson.mention_users.length > 0) {
