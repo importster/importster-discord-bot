@@ -1,4 +1,5 @@
 - discord用のbotです
+- dockerで動きます
 - 好きなgithubリポジトリに新しいリリースが来ていないかを確認するbotです<br>
 
 - 6時と18時に自動的にリリースが確認されます
@@ -22,10 +23,10 @@ npm install
 
 ### 3. credentials.ymlの変更
 ```yaml
-discord-token: "yourtoken"
-github-token : "yourtoken"
+discord-token: "your-discord-token"
+github-token : "your-github-token"
 ```
-  - yourtokenのところに自分のdiscordのbotとgithubアカウントのトークンを書いてください
+  - your-xxxx-tokenのところにそれぞれ自分のdiscordのbotとgithubアカウントのトークンを書いてください
 
 ### 4. 起動する
 ```bash
