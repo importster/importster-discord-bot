@@ -1,0 +1,98 @@
+Document {
+  commentBefore: null,
+  comment: null,
+  errors: [],
+  warnings: [],
+  options: {
+    intAsBigInt: false,
+    keepSourceTokens: false,
+    logLevel: 'warn',
+    prettyErrors: true,
+    strict: true,
+    stringKeys: false,
+    uniqueKeys: true,
+    version: '1.2',
+    _directives: Directives {
+      docStart: null,
+      docEnd: false,
+      yaml: [Object],
+      tags: [Object],
+      atNextDocument: false
+    }
+  },
+  directives: Directives {
+    docStart: null,
+    docEnd: false,
+    yaml: { explicit: false, version: '1.2' },
+    tags: { '!!': 'tag:yaml.org,2002:' }
+  },
+  schema: Schema {
+    compat: null,
+    name: 'core',
+    knownTags: {
+      'tag:yaml.org,2002:binary': [Object],
+      'tag:yaml.org,2002:merge': [Object],
+      'tag:yaml.org,2002:omap': [Object],
+      'tag:yaml.org,2002:pairs': [Object],
+      'tag:yaml.org,2002:set': [Object],
+      'tag:yaml.org,2002:timestamp': [Object]
+    },
+    tags: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object]
+    ],
+    toStringOptions: null,
+    sortMapEntries: null
+  },
+  contents: YAMLMap {
+    items: [Pair], [Pair], [Pair], [Pair],
+      Pair {
+        key: Scalar {
+          value: 'repository',
+          range: [Array],
+          source: 'repository',
+          type: 'PLAIN'
+        },
+        value: YAMLSeq {
+          items: [
+            Scalar {
+              value: 'importster/TheOtherFunctions',
+              range: [Array],
+              source: 'importster/TheOtherFunctions',
+              type: 'QUOTE_DOUBLE'
+            },
+            Scalar {
+              value: 'importster/TheOtherFunctions1',
+              range: [Array],
+              source: 'importster/TheOtherFunctions1',
+              type: 'QUOTE_DOUBLE',
+              commentBefore: 'importster/importster-discord-bot'
+            }
+          ],
+          flow: true,
+          comment: 'importster/importster-discord-bot2\n',
+          range: [ 21, 189, 189 ]
+        }
+      },
+      Pair {
+        key: Scalar {
+          value: 'rmrepo',
+          range: [Array],
+          source: 'rmrepo',
+          type: 'PLAIN',
+          spaceBefore: true
+        },
+        value: YAMLSeq { items: [Array], flow: true, range: [Array] }
+      },
+      Pair { key: 'mention_users3', value: [ 4 ] },
+      Pair { key: 'mention_users', value: Scalar { value: 5 } }
+    ]
+    range: [ 0, 254, 254 ]
+  },
+  range: [ 0, 254, 254 ]
+}
+

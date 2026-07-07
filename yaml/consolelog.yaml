@@ -1,0 +1,149 @@
+#console.log(String(doc.contents));
+{
+  "target_channel_id":"1521874479012253837",
+  "mention_users":["a3254275375","1192480507167002737",5],
+  "mention_users2":["1192480507167002737"],
+  "mention_users3":[4]
+}
+
+
+#console.log(String(doc));
+"target_channel_id": "1521874479012253837"
+"mention_users":
+  - "a3254275375"
+  - "1192480507167002737"
+  - 5
+"mention_users2":
+  - "1192480507167002737"
+mention_users3:
+  - 4
+
+
+#console.log(doc.contents.items.toString());
+{"target_channel_id":"1521874479012253837"},
+{"mention_users":["a3254275375","1192480507167002737",5]},
+{"mention_users2":["1192480507167002737"]},
+{"mention_users3":[4]}
+
+
+#console.log(String(pair.value));
+1521874479012253837
+["a3254275375","1192480507167002737",5]
+["1192480507167002737"]
+4
+
+#console.log(String(pair));
+{"target_channel_id":"1521874479012253837"}
+{"mention_users":["a3254275375","1192480507167002737",5]}
+{"mention_users2":["1192480507167002737"]}
+{"mention_users3":[4]}
+
+#console.log(String(pair.key.value));
+target_channel_id
+mention_users
+mention_users2
+undefined
+
+#console.log(pair.key.toString());
+target_channel_id
+mention_users
+mention_users2
+mention_users3
+
+
+#console.log(String(Object.values(doc.items[1])));
+mention_users,["a3254275375","1192480507167002737",5]
+
+#console.log(String(Object.keys(doc.items[1].value)));
+items,range,comment
+
+
+
+items
+  {"target_channel_id":"1521874479012253837"},
+  {"mention_users":["a3254275375","1192480507167002737",5]},
+  items[1].value
+    key
+      mention_users
+    value
+      ["a3254275375","1192480507167002737",5]
+      items
+        a3254275375
+        1192480507167002737
+      range
+      comment
+  {"mention_users2":["1192480507167002737"]},{"mention_users3":[4]},
+range
+  0,
+  152,
+  152
+key
+  mention_users
+  value
+    ["a3254275375","1192480507167002737",5]
+    items
+      a3254275375
+      1192480507167002737
+    range
+    comment
+    
+
+
+
+
+
+
+
+"target_channel_id": "1521874479012253837"
+"mention_users":
+  - "a3254275375"
+  - "1192480507167002737"
+  # aaa
+  # aaa
+"mention_users2":
+  - "1192480507167002737"
+
+YAMLSeq {
+  items: [
+    Scalar {
+      value: 'a3254275375',
+      range: [Array],
+      source: 'a3254275375',
+      type: 'QUOTE_DOUBLE'
+    },
+    Scalar {
+      value: '1192480507167002737',
+      range: [Array],
+      source: '1192480507167002737',
+      type: 'QUOTE_DOUBLE'
+    },
+    5
+  ],
+  comment: ' aaa\r\n aaa',
+  range: [ 64, 108, 126 ]
+}
+
+
+YAMLSeq {
+  items: [
+    Scalar {
+      value: 'importster/TheOtherFunctions',
+      range: [Array],
+      source: 'importster/TheOtherFunctions',
+      type: 'QUOTE_DOUBLE'
+    },
+    Scalar {
+      value: 'importster/TheOtherFunctions1',
+      range: [Array],
+      source: 'importster/TheOtherFunctions1',
+      type: 'QUOTE_DOUBLE',
+      commentBefore: 'importster/importster-discord-bot'
+    }
+  ],
+  flow: true,
+  comment: 'importster/importster-discord-bot2\n',
+  range: [ 21, 189, 189 ]
+}
+
+
+
