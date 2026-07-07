@@ -1,0 +1,7 @@
+Thumbs.db
+commands/
+events/
+node_modules/
+Resources/
+package-lock.json
+package.json
