@@ -1,7 +1,12 @@
 Thumbs.db
-commands/
-events/
-node_modules/
-Resources/
+bot1/
+bot1
+yaml/
 package-lock.json
 package.json
+bot/commands/
+bot/events/
+bot/node_modules/
+bot/Resources/
+bot/package-lock.json
+bot/package.json
