@@ -55,7 +55,62 @@ const Logger = (message, isError = false ,op = false) => {
 };
 Logger('----------------------------------');
 
+//----------------------------------------------------------------data
+let ZONETIME = 0;
+if (new Date().getTimezoneOffset() !== -540) {
+    ZONETIME = 9;
+}
+const date_format = 'Y-m-d'; const time_format = 'H:i:s'; const weeklabels = ['日', '月', '火', '水', '木', '金', '土'];
+function pDate(format, timestamp = null) {
+    //const date = timestamp !== null ? new Date(timestamp * 1000) : new Date();
+    const date = timestamp !== null ? new Date(timestamp) : new Date();
+    const pad = (num) => String(num).padStart(2, '0');
 
+    const formats = {
+        
+        //year
+        'Y': date.getFullYear(),                      // 2026
+        'y': String(date.getFullYear()).slice(-2),    // 26
+        
+        //month
+        'm': pad(date.getMonth() + 1),                // 01-12
+        'n': date.getMonth() + 1,                     // 1-12
+
+        //day
+        'd': pad(date.getDate()),                     // 01-31
+        'j': date.getDate(),                          // 1-31
+
+        //week
+        'w': date.getDay(),                           // 0:日 - 6:土
+        
+        //hours
+        'H': pad(date.getHours()),                    // 00-23
+        'G': date.getHours(),                         // 0-23
+        'h': pad(date.getHours() % 12 || 12),         // 01-12
+        'g': date.getHours() % 12 || 12,              // 1-12
+        
+        //minutes
+        'i': pad(date.getMinutes()),                  // 00-59
+
+        //seconds
+        's': pad(date.getSeconds())                   // 00-59
+    };
+
+    return format.split('').map(char => {
+        return formats[char] !== undefined ? formats[char] : char;
+    }).join('');
+}
+
+function format_date(val, paren = false)
+{
+	val += ZONETIME * 60 * 60 * 1000;
+
+	$date = pDate(date_format, val) +
+		' (' + weeklabels[pDate('w', val)] + ') ' +
+		pDate(time_format, val);
+
+	return paren ? '(' + $date + ')' : $date;
+}
 //----------------------------------------------------------------wiki.js
 
 const WIKI_COFIG_FILE = './Resources/wiki-config.yml';
@@ -141,6 +196,7 @@ const getRepoName = (repo) => {
 }
 
 //----------------------------------------------------------------data
+/*
 function formatNow() {
   const d = new Date();
 
@@ -157,6 +213,7 @@ function formatNow() {
 
   return `${year}-${month}-${day} (${week}) ${hours}:${minutes}:${seconds}`;
 }
+  */
 //--------------------------------------------------------------------------------------------------------------------------------wiki
 //----------------------------------------------------------------escape
 const escapeHtml = (str) => {
@@ -361,7 +418,7 @@ async function checkGitHubReleases(targetChannel = null) {
                 await channel.send({ embeds: [embed] });
                 
                 const reponame = await getRepoName(`${repo}`);
-                const contents = await `-[[${reponame} ${latestRelease.tag_name} リリース>${latestRelease.html_url}]] --  &new{${await formatNow()}};` || "error";
+                const contents = await `-[[${reponame} ${latestRelease.tag_name} リリース>${latestRelease.html_url}]] --  &new{${await format_date(Date.now())}};` || "error";
                 await writePage(`${wikiConfig['wiki-page']}`,`${contents}`);
 
                 lereaseCount++;
