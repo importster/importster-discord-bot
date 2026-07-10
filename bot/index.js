@@ -40,7 +40,7 @@ const OP_LOG_FILE = './Resources/op-log.txt';
 const Logger = (message, isError = false ,op = false) => {
     const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
     //const prefix = isError ? '[ERROR]' : '[INFO]';
-    const logLine = `[${now}]  ${message}\n`;
+    const logLine = `[${now}] ${message}\n`;
     
     if (isError) {
         console.error(logLine.trim());
@@ -69,31 +69,31 @@ function pDate(format, timestamp = null) {
     const formats = {
         
         //year
-        'Y': date.getFullYear(),                      // 2026
-        'y': String(date.getFullYear()).slice(-2),    // 26
+        'Y': date.getFullYear(), // 2026
+        'y': String(date.getFullYear()).slice(-2), // 26
         
         //month
-        'm': pad(date.getMonth() + 1),                // 01-12
-        'n': date.getMonth() + 1,                     // 1-12
+        'm': pad(date.getMonth() + 1), // 01-12
+        'n': date.getMonth() + 1, // 1-12
 
         //day
-        'd': pad(date.getDate()),                     // 01-31
-        'j': date.getDate(),                          // 1-31
+        'd': pad(date.getDate()), // 01-31
+        'j': date.getDate(), // 1-31
 
         //week
-        'w': date.getDay(),                           // 0:日 - 6:土
+        'w': date.getDay(), // 0:日 - 6:土
         
         //hours
-        'H': pad(date.getHours()),                    // 00-23
-        'G': date.getHours(),                         // 0-23
-        'h': pad(date.getHours() % 12 || 12),         // 01-12
-        'g': date.getHours() % 12 || 12,              // 1-12
+        'H': pad(date.getHours()), // 00-23
+        'G': date.getHours(), // 0-23
+        'h': pad(date.getHours() % 12 || 12), // 01-12
+        'g': date.getHours() % 12 || 12, // 1-12
         
         //minutes
-        'i': pad(date.getMinutes()),                  // 00-59
+        'i': pad(date.getMinutes()), // 00-59
 
         //seconds
-        's': pad(date.getSeconds())                   // 00-59
+        's': pad(date.getSeconds()) // 00-59
     };
 
     return format.split('').map(char => {
@@ -330,7 +330,7 @@ const saveReleaseFile = () => {
 const RELEASE_LOG_FILE = './Resources/release-log.txt';
 const logNewRelease = (repo, newInfo, ) => {
     const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-    const logMessage = `[${now}] Repo: ${repo} | ID: ${newInfo.id || 'N/A'} | Name: ${newInfo.name || 'N/A'} | createdAt: ${newInfo.created_at || 'N/A'} | updatedAt: ${newInfo.updated_at || 'N/A'} | body: ${newInfo.body || 'N/A'}\n`;
+    const logMessage = `[${now}] [${newInfo.newor}] Repo: ${repo} | ID: ${newInfo.id || 'N/A'} | Name: ${newInfo.name || 'N/A'} | createdAt: ${newInfo.created_at || 'N/A'} | updatedAt: ${newInfo.updated_at || 'N/A'} | body: ${newInfo.body || 'N/A'}\n`;
     
     fs.appendFileSync(RELEASE_LOG_FILE, logMessage, 'utf8');
     Logger(`[save] release-log.txt`);
@@ -382,9 +382,20 @@ async function checkGitHubReleases(targetChannel = null) {
             const escapedRepoName = escapeHtml(repo);
             const releaseName = latestRelease.name || latestRelease.tag_name;
 
+            let neworupdate = "null";
+
+            if(!savedRepoInfo.updated_at || savedRepoInfo.updated_at !== latestReleaseupdated_at){
+                if(savedRepoInfo.id !== latestReleaseId){
+                    neworupdate = "newrelease";
+                }else{
+                    neworupdate = "update";
+                }
+            }
             if (savedRepoInfo.id !== latestReleaseId || !savedRepoInfo.updated_at || savedRepoInfo.updated_at !== latestReleaseupdated_at) {
+                Logger(`[${neworupdate}] ${repo} : ${latestRelease.tag_name}`, false, true);
                 
                 logNewRelease(escapedRepoName, {
+                    newor: neworupdate,
                     id: escapeHtml(latestReleaseId),
                     name: escapeHtml(releaseName),
                     created_at: escapeHtml(latestRelease.created_at),
@@ -402,9 +413,7 @@ async function checkGitHubReleases(targetChannel = null) {
                 //releaseYaml.get("releases").get(`${escapedRepoName}`).setIn([new YAML.Scalar("updated_at")],new YAML.Scalar(escapeHtml(latestRelease.updated_at)))
 
                 saveReleaseFile();
-
                 updateCount++;
-                Logger(`[update] ${repo} : ${latestRelease.tag_name}`, false, true);
             }
 
             if (savedRepoInfo.id !== latestReleaseId) {
